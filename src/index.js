@@ -1,5 +1,5 @@
 require('dotenv').config();
-const { Client, GatewayIntentBits, Partials, Collection, PermissionFlagsBits, ChannelType, ActionRowBuilder, StringSelectMenuBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, ModalBuilder, TextInputBuilder, TextInputStyle } = require('discord.js');
+const { Client, GatewayIntentBits, Partials, Collection, PermissionFlagsBits, ChannelType, ActionRowBuilder, StringSelectMenuBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, ModalBuilder, TextInputBuilder, TextInputStyle, ActivityType } = require('discord.js');
 const http = require('http');
 const crypto = require('crypto');
 const querystring = require('querystring');
@@ -344,6 +344,38 @@ function parseEmojiConfig(value) {
 	return undefined;
 }
 
+// === Gestion du statut du bot ===
+async function updateBotStatus() {
+	try {
+		const guildId = config.statusGuildId;
+		if (!guildId) return;
+
+		const guild = client.guilds.cache.get(guildId) || await client.guilds.fetch(guildId).catch(() => null);
+		if (!guild) return;
+
+		const count = guild.memberCount;
+		const template = config.statusText || 'Surveille {count} membres';
+		const statusText = template.replace('{count}', count);
+
+		let type = ActivityType.Watching;
+		if (config.statusType) {
+			const t = String(config.statusType).toLowerCase();
+			if (t === 'playing') type = ActivityType.Playing;
+			else if (t === 'listening') type = ActivityType.Listening;
+			else if (t === 'competing') type = ActivityType.Competing;
+			else if (t === 'streaming') type = ActivityType.Streaming;
+		}
+
+		client.user.setPresence({
+			activities: [{ name: statusText, type: type }],
+			status: 'online'
+		});
+		// logInfo(`[STATUS] Mis à jour: ${statusText} (${guild.name})`); // Verbose, à décommenter si besoin
+	} catch (e) {
+		originalConsole.error('Erreur mise à jour statut bot:', e);
+	}
+}
+
 client.once('ready', async () => {
 	logChannel = await resolveLogChannel();
 	originalConsole.log(`[ready] Connecté en tant que ${client.user.tag}`);
@@ -357,6 +389,10 @@ client.once('ready', async () => {
 			}
 		}
 	}
+
+	// Initialiser et planifier le statut
+	updateBotStatus();
+	setInterval(updateBotStatus, 10 * 60 * 1000); // maj toutes les 10 min
 
 	// Publier/assurer le panneau dans #devenir-wl
 	try {

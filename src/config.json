@@ -34,7 +34,9 @@
     "whitelistApplyBannerPath": "src/assets/DevenirWhitelist.png",
     "whitelistResultChannelId": "YOUR_RESULT_CHANNEL_ID",
     "whitelistFormChannelName": "formulaire-wl",
-    "factionKonohaEmoji": "🍃",
     "factionSunaEmoji": "🏜️",
-    "whitelistRoleId": "ROLE_ID_WHITELIST"
+    "whitelistRoleId": "ROLE_ID_WHITELIST",
+    "statusGuildId": "1421909011799736416",
+    "statusText": "Veille sur {count} shinobis !",
+    "statusType": "Watching"
 }
