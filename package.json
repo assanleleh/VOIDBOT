@@ -5,6 +5,10 @@
   "main": "src/index.js",
   "scripts": {
     "start": "node src/index.js",
+    "start:bg": "pm2 start src/index.js --name voidbot",
+    "stop:bg": "pm2 stop voidbot",
+    "restart:bg": "pm2 restart voidbot",
+    "logs": "pm2 logs voidbot",
     "register": "node src/register-commands.js"
   },
   "keywords": [],
@@ -13,6 +17,7 @@
   "dependencies": {
     "discord.js": "^14.22.1",
     "dotenv": "^17.2.3",
+    "pm2": "^6.0.14",
     "sharp": "^0.34.4"
   }
 }
