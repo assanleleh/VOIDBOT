@@ -1939,6 +1939,13 @@ client.on('guildMemberAdd', async (member) => {
 		console.log(`[WELCOME] CRASH/ERREUR globale dans l'event guildMemberAdd: ${e.message}`);
 		originalConsole.error('[WELCOME] Erreur complète:', e);
 	}
+	// Mettre à jour le statut immédiatement
+	updateBotStatus();
+});
+
+client.on('guildMemberRemove', (member) => {
+	// Mettre à jour le statut immédiatement lors d'un départ
+	updateBotStatus();
 });
 
 client.login(token);
