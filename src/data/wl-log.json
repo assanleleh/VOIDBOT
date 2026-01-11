@@ -1,0 +1,56 @@
+{
+  "submissions": [
+    {
+      "userId": "1390014618533101822",
+      "messageId": "1424526966870245427",
+      "submittedAt": "2025-10-05T22:41:34.878Z",
+      "guildId": "1423527750542688338",
+      "channelId": "1423774803156009042",
+      "faction": "Konoha",
+      "identity": "fzefze",
+      "status": "accepted",
+      "decidedAt": "2025-10-05T22:41:39.132Z",
+      "reviewerId": "1390014618533101822"
+    },
+    {
+      "userId": "1390014618533101822",
+      "messageId": "1424527717310795860",
+      "submittedAt": "2025-10-05T22:44:33.744Z",
+      "guildId": "1423527750542688338",
+      "channelId": "1423774803156009042",
+      "faction": "Suna",
+      "identity": "azdazdadz",
+      "status": "accepted",
+      "decidedAt": "2025-10-05T22:44:36.332Z",
+      "reviewerId": "1390014618533101822"
+    },
+    {
+      "userId": "1390014618533101822",
+      "messageId": "1424600549483085904",
+      "submittedAt": "2025-10-06T03:33:58.144Z",
+      "guildId": "1423527750542688338",
+      "channelId": "1423774803156009042",
+      "faction": "Konoha",
+      "identity": "EAZEAZEAE",
+      "status": "accepted_final",
+      "decidedAt": "2025-10-06T03:34:06.269Z",
+      "reviewerId": "1390014618533101822",
+      "stage": "vocal",
+      "grantedAt": "2025-10-06T03:34:53.549Z",
+      "grantedBy": "1390014618533101822"
+    },
+    {
+      "userId": "1390014618533101822",
+      "messageId": "1424961910713094297",
+      "submittedAt": "2025-10-07T03:29:54.092Z",
+      "guildId": "1423527750542688338",
+      "channelId": "1423774803156009042",
+      "faction": "Konoha",
+      "identity": "pokopk^pzf",
+      "status": "accepted",
+      "decidedAt": "2025-10-07T03:29:56.860Z",
+      "reviewerId": "1390014618533101822",
+      "stage": "form"
+    }
+  ]
+}
