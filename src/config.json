@@ -1,0 +1,40 @@
+{
+    "ticketCategoryId": "YOUR_TICKET_CATEGORY_ID",
+    "logChannelId": "YOUR_LOG_CHANNEL_ID",
+    "panelTitle": "Ouvrir un ticket",
+    "panelDescription": "Choisissez un thème pour ouvrir un ticket privé.",
+    "panelColor": 5793266,
+    "themes": [
+        {
+            "key": "support",
+            "label": "Support",
+            "description": "Aide générale",
+            "emoji": "🛟",
+            "staffRoleId": "ROLE_ID_SUPPORT",
+            "welcomeMessage": "Merci de décrire votre demande de support.",
+            "color": 5763719
+        },
+        {
+            "key": "report",
+            "label": "Signalement",
+            "description": "Signaler un utilisateur ou un bug",
+            "emoji": "🚨",
+            "staffRoleId": "ROLE_ID_MOD",
+            "welcomeMessage": "Donnez les détails du signalement.",
+            "color": 15548997
+        }
+    ],
+    "welcomeBannerPath": "src/assets/WelcomeBanner.png",
+    "welcomeChannelId": "1421909012525486251",
+    "whitelistApplyGuildId": "YOUR_GUILD_ID",
+    "whitelistApplyChannelName": "devenir-wl",
+    "whitelistApplyPanelText": "**Comment obtenir la whitelist ?**\n1) Clique sur le bouton ci-dessous.\n2) Remplis le formulaire reçu.\n3) Ton dossier est envoyé et visible dans #salon-resultats.\n4) Passe ton entretien oral avec le staff.\n5) Obtiens ta whitelist si accepté.",
+    "whitelistApplyTitle": "Devenir whitelist",
+    "whitelistApplyColor": 5763719,
+    "whitelistApplyBannerPath": "src/assets/DevenirWhitelist.png",
+    "whitelistResultChannelId": "YOUR_RESULT_CHANNEL_ID",
+    "whitelistFormChannelName": "formulaire-wl",
+    "factionKonohaEmoji": "🍃",
+    "factionSunaEmoji": "🏜️",
+    "whitelistRoleId": "ROLE_ID_WHITELIST"
+}

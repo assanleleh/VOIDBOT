@@ -361,7 +361,11 @@ client.once('ready', async () => {
 	// Publier/assurer le panneau dans #devenir-wl
 	try {
 		const targetGuildId = config.whitelistApplyGuildId;
-		const targetGuild = targetGuildId ? client.guilds.cache.get(targetGuildId) || await client.guilds.fetch(targetGuildId) : null;
+		// Validate snowflake to avoid crash if config has placeholder
+		const isValidSnowflake = (id) => /^\d{17,20}$/.test(id);
+		const targetGuild = (targetGuildId && isValidSnowflake(targetGuildId))
+			? client.guilds.cache.get(targetGuildId) || await client.guilds.fetch(targetGuildId).catch(() => null)
+			: null;
 		if (targetGuild) {
 			const channel = targetGuild.channels.cache.find((c) => c.type === ChannelType.GuildText && c.name === String(config.whitelistApplyChannelName || 'devenir-wl'));
 			if (channel) {
@@ -1781,43 +1785,69 @@ process.on('uncaughtException', (err) => {
 	originalConsole.error('[uncaughtException]', err);
 });
 
+// === DEBUG: Raw Packet Listener ===
+client.on('raw', (packet) => {
+	if (packet.t === 'GUILD_MEMBER_ADD') {
+		originalConsole.log('[DEBUG-RAW] Packet GUILD_MEMBER_ADD reçu de Discord ! (L\'intent fonctionne)');
+	}
+});
+
 // === Welcome Widget Handler ===
 client.on('guildMemberAdd', async (member) => {
+	originalConsole.log(`[DEBUG-HARD] Event guildMemberAdd triggered for ${member.user.tag}`);
 	try {
-		logInfo(`[WELCOME] Nouveau membre: ${member.user.tag} (${member.id})`);
+		console.log(`[WELCOME] Nouveau membre: ${member.user.tag} (${member.id})`);
 
 		// Auto-role assignment
 		const autoRoleID = '1423236972729864222';
 		try {
 			await member.roles.add(autoRoleID);
-			logInfo(`[AUTOROLE] Role ${autoRoleID} added to ${member.user.tag}`);
+			console.log(`[AUTOROLE] Role ${autoRoleID} added to ${member.user.tag}`);
 		} catch (e) {
 			originalConsole.error(`[AUTOROLE] Failed to add role ${autoRoleID} to ${member.user.tag}:`, e);
 		}
 
 		// Check for channel
 		let channel = null;
+		console.log('[WELCOME] Recherche du salon de bienvenue...');
+
 		if (config.welcomeChannelId) {
+			console.log(`[WELCOME] config.welcomeChannelId est défini: ${config.welcomeChannelId}. Vérification du cache...`);
 			channel = member.guild.channels.cache.get(config.welcomeChannelId);
 		}
 
 		// Fallback or retry fetch if not found in cache
 		if (!channel && config.welcomeChannelId) {
+			console.log(`[WELCOME] Salon non trouvé dans le cache. Tentative de fetch via l'API pour l'ID ${config.welcomeChannelId}...`);
 			channel = await member.guild.channels.fetch(config.welcomeChannelId).catch(() => null);
+		}
+
+		if (channel) {
+			console.log(`[WELCOME] SUCCÈS: Salon trouvé par ID: #${channel.name} (${channel.id})`);
+		} else if (config.welcomeChannelId) {
+			console.log(`[WELCOME] ÉCHEC: config.welcomeChannelId était défini mais le salon est introuvable.`);
 		}
 
 		// Auto-detect if not configured
 		if (!channel) {
+			console.log('[WELCOME] Tentative de détection automatique (mots-clés: bienvenue, welcome, arrivée, arrivées, new-player)...');
 			const possibleNames = ['bienvenue', 'welcome', 'arrivée', 'arrivées', 'new-player'];
 			channel = member.guild.channels.cache.find(c => c.isTextBased() && possibleNames.some(n => c.name.toLowerCase().includes(n)));
+
+			if (channel) {
+				console.log(`[WELCOME] SUCCÈS: Salon trouvé par détection automatique: #${channel.name} (${channel.id})`);
+			} else {
+				console.log('[WELCOME] ÉCHEC: Aucun salon correspondant aux mots-clés n\'a été trouvé.');
+			}
 		}
 
 		if (!channel) {
-			logInfo(`[WELCOME] Aucun salon de bienvenue trouvé/configuré pour ${member.guild.name}.`);
+			console.log(`[WELCOME] CRITIQUE: Aucun salon de bienvenue trouvé/configuré pour ${member.guild.name}. Abandon.`);
 			return;
 		}
 
 		// Build content
+		console.log('[WELCOME] Construction du message...');
 		const title = config.welcomeTitle || "👋 Bienvenue Ninja !";
 		const messageTemplate = config.welcomeMessage || "Hey {user}, bienvenue sur 🌌 **VOIDRP** !\nN'hésite pas à lire le {rules} pour obtenir l'accès au serveur.";
 
@@ -1845,17 +1875,33 @@ client.on('guildMemberAdd', async (member) => {
 		const files = [];
 		const bannerPath = config.welcomeBannerPath ? path.resolve(process.cwd(), config.welcomeBannerPath) : null;
 
-		if (bannerPath && fs.existsSync(bannerPath)) {
-			const attachmentName = path.basename(bannerPath);
-			files.push({ attachment: bannerPath, name: attachmentName });
-			embed.setImage(`attachment://${attachmentName}`);
+		if (config.welcomeBannerPath) {
+			console.log(`[WELCOME] Chemin bannière configuré: "${config.welcomeBannerPath}"`);
+			console.log(`[WELCOME] Chemin absolu résolu: "${bannerPath}"`);
+			if (bannerPath && fs.existsSync(bannerPath)) {
+				console.log('[WELCOME] Bannière trouvée sur le disque. Ajout aux fichiers joints.');
+				const attachmentName = path.basename(bannerPath);
+				files.push({ attachment: bannerPath, name: attachmentName });
+				embed.setImage(`attachment://${attachmentName}`);
+			} else {
+				console.log(`[WELCOME] ÉCHEC: Le fichier de bannière n'existe pas ou le chemin est incorrect.`);
+			}
+		} else {
+			console.log('[WELCOME] Aucune bannière configurée (config.welcomeBannerPath vide).');
 		}
 
-		await channel.send({ embeds: [embed], files: files });
-		logInfo(`[WELCOME] Message de bienvenue envoyé pour ${member.user.tag} dans ${channel.name}`);
+		console.log(`[WELCOME] Envoi du message dans #${channel.name} (${channel.id})...`);
+		try {
+			await channel.send({ embeds: [embed], files: files });
+			console.log(`[WELCOME] SUCCÈS: Message de bienvenue envoyé pour ${member.user.tag}`);
+		} catch (sendError) {
+			console.log(`[WELCOME] ERREUR lors de l'envoi du message: ${sendError.message}`);
+			originalConsole.error(sendError);
+		}
 
 	} catch (e) {
-		originalConsole.error('[WELCOME] Erreur:', e);
+		console.log(`[WELCOME] CRASH/ERREUR globale dans l'event guildMemberAdd: ${e.message}`);
+		originalConsole.error('[WELCOME] Erreur complète:', e);
 	}
 });
 
