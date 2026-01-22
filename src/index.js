@@ -7,6 +7,9 @@ const fs = require('fs');
 const path = require('path');
 const sharp = require('sharp');
 const util = require('util');
+const express = require('express');
+const cors = require('cors');
+const axios = require('axios');
 const DATA_DIR = path.join(__dirname, 'data');
 const WL_STORE_PATH = path.join(DATA_DIR, 'wl-log.json');
 
@@ -760,6 +763,55 @@ client.once('ready', async () => {
 		}
 	} catch (e) {
 		originalConsole.error('Erreur démarrage webhook GitHub:', e);
+	}
+
+
+	// === API Whitelist Check ===
+	try {
+		const app = express();
+		app.use(cors());
+		app.use(express.json());
+
+		app.post('/api/whitelist/check', async (req, res) => {
+			const { token } = req.body;
+			if (!token) return res.status(400).json({ auth: false, reason: 'Token missing' });
+
+			try {
+				// Verify Token & Get User ID
+				const userResp = await axios.get('https://discord.com/api/users/@me', {
+					headers: { Authorization: `Bearer ${token}` }
+				});
+				const userId = userResp.data.id;
+
+				const guildId = config.whitelistApplyGuildId; // Using the main guild ID from config
+				const roleId = config.whitelistRoleId;
+
+				const guild = client.guilds.cache.get(guildId) || await client.guilds.fetch(guildId).catch(() => null);
+				if (!guild) return res.status(500).json({ auth: false, reason: 'Guild error' });
+
+				const member = await guild.members.fetch(userId).catch(() => null);
+				if (!member) return res.status(403).json({ auth: false, reason: 'Not in guild' });
+
+				// Check Role
+				const hasRole = member.roles.cache.has(roleId);
+				// Check if user is the bot itself (just in case, as per request)
+				const isBot = userId === client.user.id;
+
+				if (hasRole || isBot) {
+					return res.json({ auth: true, user: userResp.data });
+				} else {
+					return res.status(403).json({ auth: false, reason: 'Missing Role' });
+				}
+			} catch (err) {
+				console.error('[API] Whitelist Check Error', err.response?.data || err.message);
+				return res.status(401).json({ auth: false, reason: 'Invalid Token or API Error' });
+			}
+		});
+
+		const apiPort = config.apiPort || 3001;
+		app.listen(apiPort, () => originalConsole.log(`[API] Whitelist Server running on port ${apiPort}`));
+	} catch (e) {
+		originalConsole.error('Error starting API server:', e);
 	}
 });
 
