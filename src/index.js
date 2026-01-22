@@ -13,21 +13,34 @@ const axios = require('axios');
 const DATA_DIR = path.join(__dirname, 'data');
 const WL_STORE_PATH = path.join(DATA_DIR, 'wl-log.json');
 
-const CONFIG_PATH = path.join(__dirname, 'config.json');
-const EXAMPLE_CONFIG_PATH = path.join(__dirname, 'config.example.json');
+const CONFIG_DEV_PATH = path.join(__dirname, 'config.development.json');
+const CONFIG_PROD_PATH = path.join(__dirname, 'config.production.json');
+const CONFIG_DEFAULT_PATH = path.join(__dirname, 'config.json');
 
 /**
- * Load configuration from src/config.json. If missing, fall back to example and warn.
+ * Load configuration based on NODE_ENV.
+ * - production: uses config.production.json
+ * - development (default): uses config.development.json
+ * Fallback to config.json if specific env config is missing.
  */
 function loadConfig() {
-	if (fs.existsSync(CONFIG_PATH)) {
-		return JSON.parse(fs.readFileSync(CONFIG_PATH, 'utf8'));
+	const env = process.env.NODE_ENV || 'development';
+	console.log(`[config] Loading configuration for environment: ${env}`);
+
+	let targetPath = env === 'production' ? CONFIG_PROD_PATH : CONFIG_DEV_PATH;
+
+	if (fs.existsSync(targetPath)) {
+		console.log(`[config] Loaded ${path.basename(targetPath)}`);
+		return JSON.parse(fs.readFileSync(targetPath, 'utf8'));
 	}
-	console.warn('[config] src/config.json introuvable. Utilisation de src/config.example.json comme fallback.');
-	if (fs.existsSync(EXAMPLE_CONFIG_PATH)) {
-		return JSON.parse(fs.readFileSync(EXAMPLE_CONFIG_PATH, 'utf8'));
+
+	// Fallback logic
+	if (fs.existsSync(CONFIG_DEFAULT_PATH)) {
+		console.warn(`[config] ${path.basename(targetPath)} not found. Falling back to config.json`);
+		return JSON.parse(fs.readFileSync(CONFIG_DEFAULT_PATH, 'utf8'));
 	}
-	throw new Error('Aucun fichier de configuration trouvé. Créez src/config.json en vous basant sur src/config.example.json');
+
+	throw new Error(`Configuration file not found. Please create ${path.basename(targetPath)} or src/config.json`);
 }
 
 const config = loadConfig();
