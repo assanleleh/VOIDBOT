@@ -26,7 +26,7 @@
     ],
     "welcomeBannerPath": "src/assets/WelcomeBanner.png",
     "welcomeChannelId": "1421909012525486251",
-    "whitelistApplyGuildId": "YOUR_GUILD_ID",
+    "whitelistApplyGuildId": "1463894282296627294",
     "whitelistApplyChannelName": "devenir-wl",
     "whitelistApplyPanelText": "**Comment obtenir la whitelist ?**\n1) Clique sur le bouton ci-dessous.\n2) Remplis le formulaire reçu.\n3) Ton dossier est envoyé et visible dans #salon-resultats.\n4) Passe ton entretien oral avec le staff.\n5) Obtiens ta whitelist si accepté.",
     "whitelistApplyTitle": "Devenir whitelist",
@@ -35,7 +35,7 @@
     "whitelistResultChannelId": "YOUR_RESULT_CHANNEL_ID",
     "whitelistFormChannelName": "formulaire-wl",
     "factionSunaEmoji": "🏜️",
-    "whitelistRoleId": "ROLE_ID_WHITELIST",
+    "whitelistRoleId": "1463898078904979651",
     "statusGuildId": "1421909011799736416",
     "statusText": "Veille sur {count} shinobis !",
     "statusType": "Watching"
