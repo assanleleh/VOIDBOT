@@ -819,14 +819,47 @@ client.once('ready', async () => {
 				console.error('[API] Whitelist Check Error', err.response?.data || err.message);
 				return res.status(401).json({ auth: false, reason: 'Invalid Token or API Error' });
 			}
-		});
 
-		const apiPort = config.apiPort || 3001;
-		app.listen(apiPort, () => originalConsole.log(`[API] Whitelist Server running on port ${apiPort}`));
-	} catch (e) {
-		originalConsole.error('Error starting API server:', e);
-	}
-});
+			app.post('/api/check-role', async (req, res) => {
+				const { userId, role } = req.body;
+				if (!userId || !role) return res.status(400).json({ error: 'Missing userId or role' });
+
+				try {
+					let targetRoleId;
+					if (role === 'alpha') {
+						targetRoleId = config.alphaRoleId;
+					} else if (role === 'beta') {
+						targetRoleId = config.betaRoleId;
+					} else {
+						return res.status(400).json({ error: 'Unknown role type' });
+					}
+
+					if (!targetRoleId) {
+						return res.status(500).json({ error: 'Role not configured' });
+					}
+
+					const guildId = config.whitelistApplyGuildId; // Using main guild
+					const guild = client.guilds.cache.get(guildId) || await client.guilds.fetch(guildId).catch(() => null);
+					if (!guild) return res.status(500).json({ error: 'Guild not found' });
+
+					const member = await guild.members.fetch(userId).catch(() => null);
+					if (!member) return res.json({ hasRole: false, reason: 'Member not found' });
+
+					const hasRole = member.roles.cache.has(targetRoleId);
+					return res.json({ hasRole });
+
+				} catch (err) {
+					originalConsole.error('[API] Check Role Error', err);
+					return res.status(500).json({ error: 'Internal Server Error' });
+				}
+			});
+
+			const apiPort = config.apiPort || 3001;
+			app.listen(apiPort, () => originalConsole.log(`[API] Whitelist Server running on port ${apiPort}`));
+		} catch (e) {
+			originalConsole.error('Error starting API server:', e);
+		}
+	});
 
 /**
  * Build the select menu for ticket themes based on configuration
