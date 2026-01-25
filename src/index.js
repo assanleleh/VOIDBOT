@@ -779,87 +779,98 @@ client.once('ready', async () => {
 	}
 
 
-	// === API Whitelist Check ===
+
+});
+
+// === API Whitelist Check & Role Verification ===
+const app = express();
+app.use(cors());
+app.use(express.json());
+
+// Request logging middleware
+app.use((req, res, next) => {
+	console.log(`[API] ${req.method} ${req.url}`);
+	next();
+});
+
+app.post('/api/whitelist/check', async (req, res) => {
+	const { token } = req.body;
+	if (!token) return res.status(400).json({ auth: false, reason: 'Token missing' });
+
 	try {
-		const app = express();
-		app.use(cors());
-		app.use(express.json());
+		// Verify Token & Get User ID
+		const userResp = await axios.get('https://discord.com/api/users/@me', {
+			headers: { Authorization: `Bearer ${token}` }
+		});
+		const userId = userResp.data.id;
 
-		app.post('/api/whitelist/check', async (req, res) => {
-			const { token } = req.body;
-			if (!token) return res.status(400).json({ auth: false, reason: 'Token missing' });
+		const guildId = config.whitelistApplyGuildId; // Using the main guild ID from config
+		const roleId = config.whitelistRoleId;
 
-			try {
-				// Verify Token & Get User ID
-				const userResp = await axios.get('https://discord.com/api/users/@me', {
-					headers: { Authorization: `Bearer ${token}` }
-				});
-				const userId = userResp.data.id;
+		const guild = client.guilds.cache.get(guildId) || await client.guilds.fetch(guildId).catch(() => null);
+		if (!guild) return res.status(500).json({ auth: false, reason: 'Guild error' });
 
-				const guildId = config.whitelistApplyGuildId; // Using the main guild ID from config
-				const roleId = config.whitelistRoleId;
+		const member = await guild.members.fetch(userId).catch(() => null);
+		if (!member) return res.status(403).json({ auth: false, reason: 'Not in guild' });
 
-				const guild = client.guilds.cache.get(guildId) || await client.guilds.fetch(guildId).catch(() => null);
-				if (!guild) return res.status(500).json({ auth: false, reason: 'Guild error' });
+		// Check Role
+		const hasRole = member.roles.cache.has(roleId);
+		// Check if user is the bot itself (just in case)
+		const isBot = userId === client.user.id;
 
-				const member = await guild.members.fetch(userId).catch(() => null);
-				if (!member) return res.status(403).json({ auth: false, reason: 'Not in guild' });
-
-				// Check Role
-				const hasRole = member.roles.cache.has(roleId);
-				// Check if user is the bot itself (just in case, as per request)
-				const isBot = userId === client.user.id;
-
-				if (hasRole || isBot) {
-					return res.json({ auth: true, user: userResp.data });
-				} else {
-					return res.status(403).json({ auth: false, reason: 'Missing Role' });
-				}
-			} catch (err) {
-				console.error('[API] Whitelist Check Error', err.response?.data || err.message);
-				return res.status(401).json({ auth: false, reason: 'Invalid Token or API Error' });
-			}
-
-			app.post('/api/check-role', async (req, res) => {
-				const { userId, role } = req.body;
-				if (!userId || !role) return res.status(400).json({ error: 'Missing userId or role' });
-
-				try {
-					let targetRoleId;
-					if (role === 'alpha') {
-						targetRoleId = config.alphaRoleId;
-					} else if (role === 'beta') {
-						targetRoleId = config.betaRoleId;
-					} else {
-						return res.status(400).json({ error: 'Unknown role type' });
-					}
-
-					if (!targetRoleId) {
-						return res.status(500).json({ error: 'Role not configured' });
-					}
-
-					const guildId = config.whitelistApplyGuildId; // Using main guild
-					const guild = client.guilds.cache.get(guildId) || await client.guilds.fetch(guildId).catch(() => null);
-					if (!guild) return res.status(500).json({ error: 'Guild not found' });
-
-					const member = await guild.members.fetch(userId).catch(() => null);
-					if (!member) return res.json({ hasRole: false, reason: 'Member not found' });
-
-					const hasRole = member.roles.cache.has(targetRoleId);
-					return res.json({ hasRole });
-
-				} catch (err) {
-					originalConsole.error('[API] Check Role Error', err);
-					return res.status(500).json({ error: 'Internal Server Error' });
-				}
-			});
-
-			const apiPort = config.apiPort || 3001;
-			app.listen(apiPort, () => originalConsole.log(`[API] Whitelist Server running on port ${apiPort}`));
-		} catch (e) {
-			originalConsole.error('Error starting API server:', e);
+		if (hasRole || isBot) {
+			return res.json({ auth: true, user: userResp.data });
+		} else {
+			return res.status(403).json({ auth: false, reason: 'Missing Role' });
 		}
-	});
+	} catch (err) {
+		console.error('[API] Whitelist Check Error', err.response?.data || err.message);
+		return res.status(401).json({ auth: false, reason: 'Invalid Token or API Error' });
+	}
+});
+
+app.post('/api/check-role', async (req, res) => {
+	const { userId, role } = req.body;
+	if (!userId || !role) return res.status(400).json({ error: 'Missing userId or role' });
+
+	try {
+		let targetRoleId;
+		if (role === 'alpha') {
+			targetRoleId = config.alphaRoleId;
+		} else if (role === 'beta') {
+			targetRoleId = config.betaRoleId;
+		} else {
+			return res.status(400).json({ error: 'Unknown role type' });
+		}
+
+		if (!targetRoleId) {
+			return res.status(500).json({ error: 'Role not configured' });
+		}
+
+		const guildId = config.whitelistApplyGuildId; // Using main guild
+		const guild = client.guilds.cache.get(guildId) || await client.guilds.fetch(guildId).catch(() => null);
+		if (!guild) return res.status(500).json({ error: 'Guild not found' });
+
+		const member = await guild.members.fetch(userId).catch(() => null);
+		if (!member) return res.json({ hasRole: false, reason: 'Member not found' });
+
+		const hasRole = member.roles.cache.has(targetRoleId);
+		return res.json({ hasRole });
+
+	} catch (err) {
+		console.error('[API] Check Role Error', err);
+		return res.status(500).json({ error: 'Internal Server Error' });
+	}
+});
+
+// Start API Server
+const apiPort = config.apiPort || 3001;
+app.get('/', (req, res) => res.send('VOIDBOT API Online'));
+
+app.listen(apiPort, () => {
+	console.log(`[API] Whitelist Server running on port ${apiPort}`);
+});
+
 
 /**
  * Build the select menu for ticket themes based on configuration
@@ -2047,3 +2058,5 @@ client.on('guildMemberRemove', (member) => {
 });
 
 client.login(token);
+
+

@@ -5,7 +5,7 @@
   "main": "src/index.js",
   "scripts": {
     "start": "node src/index.js",
-    "start:bg": "pm2 start src/index.js --name voidbot",
+    "start:bg": "pm2 start src/index.js --name voidbot --node-args='--dns-result-order=ipv4first'",
     "stop:bg": "pm2 stop voidbot",
     "restart:bg": "pm2 restart voidbot",
     "logs": "pm2 logs voidbot",
