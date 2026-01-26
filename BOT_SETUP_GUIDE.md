@@ -71,10 +71,11 @@ Dans **"OAuth2"** → **"Scopes"**, activez :
 
 1. Dans **"OAuth2"** → **"URL Generator"**
 2. Sélectionnez les scopes :
-   - ✅ **bot**
-   - ✅ **identify**
-   - ✅ **email**
-   - ✅ **guilds**
+   - ✅ **bot** (obligatoire pour inviter le bot)
+   - ⚠️ **identify**, **email**, **guilds** : Ne les sélectionnez PAS ici (ils sont pour l'OAuth, pas pour l'invitation)
+   
+   **Note** : Si vous sélectionnez des scopes OAuth2, Discord demandera une redirect URI. Pour l'invitation du bot, vous n'avez besoin QUE du scope "bot".
+
 3. Sélectionnez les permissions du bot :
    - ✅ **Read Messages/View Channels**
    - ✅ **Send Messages**
@@ -84,7 +85,13 @@ Dans **"OAuth2"** → **"Scopes"**, activez :
    - ✅ **Read Message History**
    - ✅ **Manage Channels** (pour créer les tickets)
    - ✅ **Manage Roles** (pour vérifier les rôles)
-4. Copiez l'URL générée en bas de la page
+   - ✅ **View Server Members** (obligatoire pour vérifier les rôles)
+
+4. **Si Discord demande une redirect URI** (même si vous n'avez sélectionné que "bot") :
+   - Ajoutez temporairement : `http://localhost:3005/api/auth/discord/callback`
+   - Cette URI ne sera pas utilisée pour l'invitation, c'est juste pour générer l'URL
+
+5. Copiez l'URL générée en bas de la page
 
 ### 2.2 Inviter le Bot
 
