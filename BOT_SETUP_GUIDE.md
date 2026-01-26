@@ -71,18 +71,14 @@ Dans **"OAuth2"** → **"Scopes"**, activez :
 
 **✅ IMPORTANT :** Pour inviter le bot, vous **N'AVEZ PAS BESOIN** que le bot soit démarré ! L'invitation fonctionne même si le bot est offline. Le bot apparaîtra simplement comme "offline" dans Discord jusqu'à ce que vous le démarriez.
 
-**⚠️ Note sur la redirect URI :** La redirect URI `http://localhost:3005/api/auth/discord/callback` est uniquement pour l'OAuth (authentification des utilisateurs), pas pour l'invitation du bot. Si Discord la demande dans l'URL Generator, c'est juste une exigence de leur interface, mais elle n'est pas utilisée pour l'invitation.
+**⚠️ Note importante :** Si vous avez activé **"Bot require OAuth2 Code Grant"** dans les paramètres, désactivez-le ! Cette option est uniquement pour les bots qui utilisent OAuth2 pour l'authentification, pas pour l'invitation standard.
 
-**Méthode 1 : Via URL Generator (si Discord demande une redirect URI)**
+**Méthode 1 : Via Installation (Nouvelle interface Discord)**
 
-1. Dans **"OAuth2"** → **"Redirects"**, ajoutez d'abord une redirect URI (si Discord la demande) :
-   - Cliquez sur **"Add Redirect"**
-   - Ajoutez : `http://localhost:3005/api/auth/discord/callback`
-   - ⚠️ **Note** : Cette URL est pour l'OAuth (authentification utilisateur), pas pour l'invitation du bot. Mais Discord la demande parfois dans l'URL Generator.
-   - Cliquez sur **"Save Changes"**
-
-2. Maintenant dans **"OAuth2"** → **"URL Generator"** :
+1. Dans le menu de gauche, cliquez sur **"Installation"** (ou **"OAuth2"** → **"URL Generator"** selon votre version)
+2. Dans la section **"Install App"** ou **"Scopes"** :
    - Sélectionnez le scope : ✅ **bot** (seul)
+3. Dans la section **"Bot Permissions"** :
    - Sélectionnez les permissions du bot :
      - ✅ **Read Messages/View Channels**
      - ✅ **Send Messages**
@@ -93,8 +89,24 @@ Dans **"OAuth2"** → **"Scopes"**, activez :
      - ✅ **Manage Channels** (pour créer les tickets)
      - ✅ **Manage Roles** (pour vérifier les rôles)
      - ✅ **View Server Members** (obligatoire pour vérifier les rôles)
-   - Si Discord demande toujours une redirect URI, sélectionnez celle que vous venez d'ajouter (même si elle n'est pas utilisée pour l'invitation)
-   - Copiez l'URL générée en bas de la page
+4. L'URL d'invitation sera générée automatiquement en bas de la page
+5. Copiez cette URL
+
+**Méthode 2 : Via OAuth2 → URL Generator (Ancienne interface)**
+
+Si vous voyez encore l'ancienne interface avec "URL Generator" :
+
+1. Dans **"OAuth2"** → **"Redirects"**, ajoutez une redirect URI (si Discord la demande) :
+   - Cliquez sur **"Add Redirect"**
+   - Ajoutez : `http://localhost:3005/api/auth/discord/callback`
+   - ⚠️ **Note** : Cette URL est pour l'OAuth (authentification utilisateur), pas pour l'invitation du bot.
+   - Cliquez sur **"Save Changes"**
+
+2. Dans **"OAuth2"** → **"URL Generator"** :
+   - Sélectionnez le scope : ✅ **bot** (seul)
+   - Sélectionnez les permissions du bot (liste ci-dessus)
+   - Si Discord demande une redirect URI, sélectionnez celle que vous venez d'ajouter
+   - Copiez l'URL générée
 
 **Méthode 2 : Créer l'URL manuellement (alternative)**
 
