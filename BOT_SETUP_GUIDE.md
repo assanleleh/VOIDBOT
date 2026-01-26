@@ -392,6 +392,17 @@ docker-compose -f docker-compose.dev.yml logs voidbot-dev
    ```
 4. La redirect URI `http://localhost:3005/api/auth/discord/callback` est uniquement pour que Discord puisse rediriger vers votre serveur après l'authentification OAuth - vous ne devez jamais l'ouvrir manuellement
 
+### "Bot require OAuth2 Code Grant" activé
+
+**Symptôme :** Discord demande une redirect URI et vous ne pouvez pas générer l'URL d'invitation facilement. L'interface a changé et l'URL est maintenant dans "Installation".
+
+**Solution :**
+1. Allez dans **"Bot"** dans le menu de gauche
+2. Désactivez **"Bot require OAuth2 Code Grant"** (ou **"Requires OAuth2 Code Grant"**)
+3. Cette option est uniquement pour les bots qui utilisent OAuth2 pour l'authentification, pas pour l'invitation standard
+4. Retournez dans **"Installation"** (nouvelle interface) ou **"OAuth2"** → **"URL Generator"** (ancienne interface)
+5. L'URL sera générée automatiquement sans demander de redirect URI
+
 ### Erreur "Missing Access" ou "Missing Permissions"
 
 - Vérifiez que le bot a les bonnes permissions sur le serveur
