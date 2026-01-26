@@ -187,10 +187,11 @@ function setupOAuthRoutes(app, config, discordClient) {
 				// Boutique - Authorization code flow
 				// Rediriger vers le backend callback avec token et user_id
 				// Le backend créera la session et redirigera vers le frontend
-				const backendCallbackUrl = req.query.frontend_redirect || process.env.BOUTIQUE_BACKEND_URL || 'http://localhost:3010';
+				const backendCallbackUrl = frontendRedirect || process.env.BOUTIQUE_BACKEND_URL || 'http://localhost:3010';
 				
+				// backendCallbackUrl contient déjà le chemin complet, on ne doit pas ajouter /api/auth/discord/callback
 				// Rediriger vers le backend callback
-				res.redirect(`${backendCallbackUrl}/api/auth/discord/callback?token=${access_token}&user_id=${userId}`);
+				res.redirect(`${backendCallbackUrl}?token=${access_token}&user_id=${userId}`);
 			}
 
 		} catch (err) {
