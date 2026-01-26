@@ -108,7 +108,7 @@ Si vous voyez encore l'ancienne interface avec "URL Generator" :
    - Si Discord demande une redirect URI, sélectionnez celle que vous venez d'ajouter
    - Copiez l'URL générée
 
-**Méthode 2 : Créer l'URL manuellement (alternative)**
+**Méthode 3 : Créer l'URL manuellement (alternative)**
 
 Si Discord continue de demander une redirect URI, vous pouvez créer l'URL manuellement :
 
