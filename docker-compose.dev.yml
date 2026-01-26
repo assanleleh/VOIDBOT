@@ -1,0 +1,30 @@
+# Docker Compose pour environnement DEVELOPMENT
+# Port 3005 pour dev (même que prod car VOIDBOT est un service unique)
+
+version: '3.8'
+
+services:
+  voidbot-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+    container_name: voidbot-dev
+    ports:
+      - "3005:3005"  # Port API
+    volumes:
+      # Mount source code for hot reload
+      - ./src:/app/src
+      - ./package.json:/app/package.json
+      - ./package-lock.json:/app/package-lock.json
+    env_file:
+      - .env.dev
+    environment:
+      - NODE_ENV=development
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    command: npm start
+    restart: unless-stopped
+    labels:
+      - "com.voidrp.environment=development"
+
