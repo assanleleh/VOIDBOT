@@ -353,6 +353,30 @@ curl http://localhost:3005/
 docker-compose -f docker-compose.dev.yml logs voidbot-dev
 ```
 
+### Erreur "Cannot GET /api/auth/discord/callback"
+
+**Symptôme :** Vous voyez "Cannot GET /api/auth/discord/callback" dans votre navigateur.
+
+**Cause :** Vous essayez d'accéder directement à l'URL de callback, ou VOIDBOT n'est pas démarré.
+
+**Solution :**
+1. ⚠️ **Cette URL n'est PAS destinée à être visitée directement** - elle est appelée automatiquement par Discord après l'authentification OAuth
+2. Vérifiez que VOIDBOT est démarré et écoute sur le port 3005 :
+   ```bash
+   # Vérifier si VOIDBOT tourne
+   curl http://localhost:3005/api/hello
+   # Devrait retourner {"message":"VOIDBOT API is running"}
+   ```
+3. Si VOIDBOT n'est pas démarré, démarrez-le :
+   ```bash
+   cd VOIDBOT
+   npm start
+   # ou avec Docker
+   docker-compose -f docker-compose.dev.yml up -d
+   ```
+4. Pour l'invitation du bot, utilisez l'URL générée dans "URL Generator", pas le callback directement
+5. La redirect URI `http://localhost:3005/api/auth/discord/callback` est uniquement pour que Discord puisse rediriger vers votre serveur après l'authentification - vous ne devez jamais l'ouvrir manuellement
+
 ### Erreur "Missing Access" ou "Missing Permissions"
 
 - Vérifiez que le bot a les bonnes permissions sur le serveur
