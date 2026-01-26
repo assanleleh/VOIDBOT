@@ -20,6 +20,7 @@ const CONFIG_DEFAULT_PATH = path.join(__dirname, 'config.json');
 /**
  * Load configuration based on NODE_ENV.
  * - production: uses config.production.json
+ * - staging: uses config.staging.json
  * - development (default): uses config.development.json
  * Fallback to config.json if specific env config is missing.
  */
@@ -27,7 +28,14 @@ function loadConfig() {
 	const env = process.env.NODE_ENV || 'development';
 	console.log(`[config] Loading configuration for environment: ${env}`);
 
-	let targetPath = env === 'production' ? CONFIG_PROD_PATH : CONFIG_DEV_PATH;
+	let targetPath;
+	if (env === 'production') {
+		targetPath = CONFIG_PROD_PATH;
+	} else if (env === 'staging') {
+		targetPath = path.join(__dirname, 'config.staging.json');
+	} else {
+		targetPath = CONFIG_DEV_PATH;
+	}
 
 	if (fs.existsSync(targetPath)) {
 		console.log(`[config] Loaded ${path.basename(targetPath)}`);
@@ -792,6 +800,10 @@ app.use((req, res, next) => {
 	console.log(`[API] ${req.method} ${req.url}`);
 	next();
 });
+
+// === OAuth Routes ===
+const { setupOAuthRoutes } = require('./oauth');
+setupOAuthRoutes(app, config, client);
 
 app.post('/api/whitelist/check', async (req, res) => {
 	const { token } = req.body;
