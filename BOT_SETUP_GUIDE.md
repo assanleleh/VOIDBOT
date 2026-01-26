@@ -119,10 +119,11 @@ https://discord.com/api/oauth2/authorize?client_id=123456789012345678&permission
 
 ### 2.2 Inviter le Bot
 
-1. Ouvrez l'URL copiée dans votre navigateur
-2. Sélectionnez votre serveur Discord
-3. Autorisez le bot
-4. Le bot devrait apparaître dans votre serveur (offline pour l'instant)
+1. **Vous n'avez PAS besoin de démarrer VOIDBOT** - l'invitation fonctionne même si le bot est offline
+2. Ouvrez l'URL copiée dans votre navigateur
+3. Sélectionnez votre serveur Discord
+4. Autorisez le bot
+5. Le bot devrait apparaître dans votre serveur (offline pour l'instant, jusqu'à ce que vous le démarriez)
 
 ---
 
