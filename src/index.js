@@ -145,14 +145,20 @@ async function sendLog(level, content) {
 }
 
 async function sendInChunks(channel, message) {
+	if (!channel) return; // Channel n'existe pas, ignorer silencieusement
 	const maxLen = 1900; // garder une marge pour les backticks éventuels
-	if (message.length <= maxLen) {
-		await channel.send({ content: message });
-		return;
-	}
-	for (let i = 0; i < message.length; i += maxLen) {
-		const part = message.slice(i, i + maxLen);
-		await channel.send({ content: part });
+	try {
+		if (message.length <= maxLen) {
+			await channel.send({ content: message });
+			return;
+		}
+		for (let i = 0; i < message.length; i += maxLen) {
+			const part = message.slice(i, i + maxLen);
+			await channel.send({ content: part });
+		}
+	} catch (e) {
+		// Erreur silencieuse - le channel n'existe peut-être plus ou le bot n'a pas les permissions
+		console.log(`[LOG] Failed to send log message to channel: ${e.message}`);
 	}
 }
 
@@ -1153,6 +1159,13 @@ client.on('interactionCreate', async (interaction) => {
 				try {
 					const member = await guild.members.fetch(user.id).catch(() => null);
 					if (!member) return interaction.editReply({ content: 'Membre introuvable sur ce serveur.' });
+					
+					// Vérifier que le rôle existe avant d'essayer de l'ajouter
+					const role = guild.roles.cache.get(config.whitelistRoleId);
+					if (!role) {
+						return interaction.editReply({ content: `Rôle Whitelist introuvable (ID: ${config.whitelistRoleId}). Vérifiez la configuration.` });
+					}
+					
 					await member.roles.add(config.whitelistRoleId);
 					await interaction.editReply({ content: `Rôle Whitelist attribué à ${user.tag}.` });
 					// Log dans le channel WL
