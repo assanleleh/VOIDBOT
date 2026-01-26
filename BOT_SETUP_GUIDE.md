@@ -69,14 +69,16 @@ Dans **"OAuth2"** → **"Scopes"**, activez :
 
 ### 2.1 Générer l'URL d'invitation
 
-**⚠️ IMPORTANT :** La redirect URI `http://localhost:3005/api/auth/discord/callback` n'est **PAS** destinée à être visitée directement dans votre navigateur. Elle est appelée automatiquement par Discord après l'authentification OAuth. Si vous essayez de l'ouvrir directement, vous obtiendrez "Cannot GET /api/auth/discord/callback" - c'est normal !
+**✅ IMPORTANT :** Pour inviter le bot, vous **N'AVEZ PAS BESOIN** que le bot soit démarré ! L'invitation fonctionne même si le bot est offline. Le bot apparaîtra simplement comme "offline" dans Discord jusqu'à ce que vous le démarriez.
+
+**⚠️ Note sur la redirect URI :** La redirect URI `http://localhost:3005/api/auth/discord/callback` est uniquement pour l'OAuth (authentification des utilisateurs), pas pour l'invitation du bot. Si Discord la demande dans l'URL Generator, c'est juste une exigence de leur interface, mais elle n'est pas utilisée pour l'invitation.
 
 **Méthode 1 : Via URL Generator (si Discord demande une redirect URI)**
 
-1. Dans **"OAuth2"** → **"Redirects"**, ajoutez d'abord une redirect URI :
+1. Dans **"OAuth2"** → **"Redirects"**, ajoutez d'abord une redirect URI (si Discord la demande) :
    - Cliquez sur **"Add Redirect"**
    - Ajoutez : `http://localhost:3005/api/auth/discord/callback`
-   - ⚠️ **Note** : Cette URL est pour l'OAuth (authentification utilisateur), pas pour l'invitation du bot. Mais Discord la demande parfois même pour l'invitation.
+   - ⚠️ **Note** : Cette URL est pour l'OAuth (authentification utilisateur), pas pour l'invitation du bot. Mais Discord la demande parfois dans l'URL Generator.
    - Cliquez sur **"Save Changes"**
 
 2. Maintenant dans **"OAuth2"** → **"URL Generator"** :
@@ -91,7 +93,7 @@ Dans **"OAuth2"** → **"Scopes"**, activez :
      - ✅ **Manage Channels** (pour créer les tickets)
      - ✅ **Manage Roles** (pour vérifier les rôles)
      - ✅ **View Server Members** (obligatoire pour vérifier les rôles)
-   - Si Discord demande toujours une redirect URI, sélectionnez celle que vous venez d'ajouter
+   - Si Discord demande toujours une redirect URI, sélectionnez celle que vous venez d'ajouter (même si elle n'est pas utilisée pour l'invitation)
    - Copiez l'URL générée en bas de la page
 
 **Méthode 2 : Créer l'URL manuellement (alternative)**
@@ -357,25 +359,25 @@ docker-compose -f docker-compose.dev.yml logs voidbot-dev
 
 **Symptôme :** Vous voyez "Cannot GET /api/auth/discord/callback" dans votre navigateur.
 
-**Cause :** Vous essayez d'accéder directement à l'URL de callback, ou VOIDBOT n'est pas démarré.
+**Cause :** Vous essayez d'accéder directement à l'URL de callback.
 
 **Solution :**
 1. ⚠️ **Cette URL n'est PAS destinée à être visitée directement** - elle est appelée automatiquement par Discord après l'authentification OAuth
-2. Vérifiez que VOIDBOT est démarré et écoute sur le port 3005 :
+2. **Pour l'invitation du bot** : Vous n'avez PAS besoin que VOIDBOT soit démarré. Utilisez simplement l'URL générée dans "URL Generator"
+3. **Pour l'OAuth (authentification utilisateur)** : Là oui, VOIDBOT doit être démarré pour gérer le callback. Vérifiez que VOIDBOT tourne :
    ```bash
    # Vérifier si VOIDBOT tourne
    curl http://localhost:3005/api/hello
    # Devrait retourner {"message":"VOIDBOT API is running"}
    ```
-3. Si VOIDBOT n'est pas démarré, démarrez-le :
+   Si VOIDBOT n'est pas démarré :
    ```bash
    cd VOIDBOT
    npm start
    # ou avec Docker
    docker-compose -f docker-compose.dev.yml up -d
    ```
-4. Pour l'invitation du bot, utilisez l'URL générée dans "URL Generator", pas le callback directement
-5. La redirect URI `http://localhost:3005/api/auth/discord/callback` est uniquement pour que Discord puisse rediriger vers votre serveur après l'authentification - vous ne devez jamais l'ouvrir manuellement
+4. La redirect URI `http://localhost:3005/api/auth/discord/callback` est uniquement pour que Discord puisse rediriger vers votre serveur après l'authentification OAuth - vous ne devez jamais l'ouvrir manuellement
 
 ### Erreur "Missing Access" ou "Missing Permissions"
 
