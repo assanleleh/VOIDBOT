@@ -69,11 +69,14 @@ Dans **"OAuth2"** → **"Scopes"**, activez :
 
 ### 2.1 Générer l'URL d'invitation
 
+**⚠️ IMPORTANT :** La redirect URI `http://localhost:3005/api/auth/discord/callback` n'est **PAS** destinée à être visitée directement dans votre navigateur. Elle est appelée automatiquement par Discord après l'authentification OAuth. Si vous essayez de l'ouvrir directement, vous obtiendrez "Cannot GET /api/auth/discord/callback" - c'est normal !
+
 **Méthode 1 : Via URL Generator (si Discord demande une redirect URI)**
 
 1. Dans **"OAuth2"** → **"Redirects"**, ajoutez d'abord une redirect URI :
    - Cliquez sur **"Add Redirect"**
    - Ajoutez : `http://localhost:3005/api/auth/discord/callback`
+   - ⚠️ **Note** : Cette URL est pour l'OAuth (authentification utilisateur), pas pour l'invitation du bot. Mais Discord la demande parfois même pour l'invitation.
    - Cliquez sur **"Save Changes"**
 
 2. Maintenant dans **"OAuth2"** → **"URL Generator"** :
