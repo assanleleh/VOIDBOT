@@ -21,11 +21,16 @@ function setupOAuthRoutes(app, config, discordClient) {
 	// OAuth: Start auth flow
 	app.get('/api/auth/discord', authLimiter, (req, res) => {
 		const clientId = process.env.CLIENT_ID || process.env.DISCORD_CLIENT_ID;
-		const redirectUri = process.env.DISCORD_REDIRECT_URI || req.query.redirect_uri;
+		// Priorité à req.query.redirect_uri (passé dynamiquement) plutôt qu'à DISCORD_REDIRECT_URI (config statique)
+		const redirectUri = req.query.redirect_uri || process.env.DISCORD_REDIRECT_URI;
 		const forType = req.query.for || 'launcher'; // 'launcher' ou 'boutique'
 		
-		if (!clientId || !redirectUri) {
-			return res.status(500).json({ error: 'Discord OAuth not configured. Missing CLIENT_ID or DISCORD_REDIRECT_URI' });
+		if (!clientId) {
+			return res.status(500).json({ error: 'Discord OAuth not configured. Missing CLIENT_ID' });
+		}
+		
+		if (!redirectUri) {
+			return res.status(500).json({ error: 'Discord OAuth not configured. Missing redirect_uri (query param or DISCORD_REDIRECT_URI env var)' });
 		}
 
 		// Déterminer les scopes et response_type selon le type
@@ -39,16 +44,27 @@ function setupOAuthRoutes(app, config, discordClient) {
 			responseType = 'token'; // Implicit Grant flow
 		}
 
+		console.log(`[OAuth] Redirecting to Discord OAuth for ${forType} with redirect_uri: ${redirectUri}`);
+
+		// Encode redirect_uri and other params in state parameter for callback
+		const stateData = {
+			redirect_uri: redirectUri,
+			for: forType,
+			frontend_redirect: req.query.frontend_redirect
+		};
+		const state = Buffer.from(JSON.stringify(stateData)).toString('base64');
+		console.log(`[OAuth] State encoded: ${state.substring(0, 50)}...`);
+
 		const authorize = new URL('https://discord.com/api/oauth2/authorize');
 		authorize.search = new URLSearchParams({
 			client_id: clientId,
 			redirect_uri: redirectUri,
 			response_type: responseType,
 			scope: scope,
+			state: state, // Pass state to preserve redirect_uri
 			prompt: 'consent',
 		}).toString();
 
-		console.log(`[OAuth] Redirecting to Discord OAuth for ${forType}`);
 		res.redirect(authorize.toString());
 	});
 
@@ -56,11 +72,28 @@ function setupOAuthRoutes(app, config, discordClient) {
 	app.get('/api/auth/discord/callback', authLimiter, async (req, res) => {
 		const code = req.query.code;
 		const error = req.query.error;
-		const forType = req.query.for || 'boutique';
+		const state = req.query.state;
+		
+		// Decode state to get redirect_uri and other params
+		let stateData = {};
+		if (state) {
+			try {
+				stateData = JSON.parse(Buffer.from(state, 'base64').toString());
+			} catch (e) {
+				console.error('[OAuth] Failed to decode state:', e);
+			}
+		}
+		
+		const forType = stateData.for || req.query.for || 'boutique';
+		const redirectUri = stateData.redirect_uri || req.query.redirect_uri || process.env.DISCORD_REDIRECT_URI;
+		const frontendRedirect = stateData.frontend_redirect || req.query.frontend_redirect;
+		
+		console.log(`[OAuth] Callback received - State decoded:`, stateData);
+		console.log(`[OAuth] Using redirect_uri for token exchange: ${redirectUri}`);
 		
 		if (error) {
 			console.error('[OAuth] Discord returned error:', error);
-			const frontendUrl = process.env.FRONTEND_URL || req.query.redirect_uri || 'http://localhost:5173';
+			const frontendUrl = process.env.FRONTEND_URL || frontendRedirect || 'http://localhost:5173';
 			return res.redirect(`${frontendUrl}?login=error&reason=${encodeURIComponent(error)}`);
 		}
 
@@ -70,11 +103,17 @@ function setupOAuthRoutes(app, config, discordClient) {
 
 		const clientId = process.env.CLIENT_ID || process.env.DISCORD_CLIENT_ID;
 		const clientSecret = process.env.DISCORD_CLIENT_SECRET;
-		const redirectUri = process.env.DISCORD_REDIRECT_URI || req.query.redirect_uri;
 
-		if (!clientId || !clientSecret || !redirectUri) {
-			return res.status(500).json({ error: 'Discord OAuth not configured. Missing CLIENT_ID, DISCORD_CLIENT_SECRET or DISCORD_REDIRECT_URI' });
+		if (!clientId || !clientSecret) {
+			return res.status(500).json({ error: 'Discord OAuth not configured. Missing CLIENT_ID or DISCORD_CLIENT_SECRET' });
 		}
+		
+		if (!redirectUri) {
+			console.error('[OAuth] Missing redirect_uri in callback. State:', stateData, 'Query:', req.query);
+			return res.status(500).json({ error: 'Discord OAuth not configured. Missing redirect_uri (must match authorization request)' });
+		}
+		
+		console.log(`[OAuth] Using redirect_uri for token exchange: ${redirectUri}`);
 
 		// Validate OAuth code format
 		if (code.length < 20 || code.length > 200 || !/^[a-zA-Z0-9_-]+$/.test(code)) {
@@ -140,16 +179,18 @@ function setupOAuthRoutes(app, config, discordClient) {
 			}
 
 			// 4. Retourner les infos utilisateur
-			const frontendUrl = process.env.FRONTEND_URL || req.query.redirect_uri || 
-				(forType === 'launcher' ? 'http://localhost:5173' : 'http://localhost:5173');
-			
 			if (forType === 'launcher') {
-				// Implicit flow - rediriger avec token dans hash
+				// Launcher - Implicit flow
+				const frontendUrl = process.env.FRONTEND_URL || req.query.redirect_uri || 'http://localhost:5173';
 				res.redirect(`${frontendUrl}/auth/callback#access_token=${access_token}&token_type=Bearer&expires_in=604800`);
 			} else {
-				// Authorization code flow - retourner token pour la boutique
-				// La boutique peut ensuite créer sa propre session JWT
-				res.redirect(`${frontendUrl}?login=success&token=${access_token}&user_id=${userId}`);
+				// Boutique - Authorization code flow
+				// Rediriger vers le backend callback avec token et user_id
+				// Le backend créera la session et redirigera vers le frontend
+				const backendCallbackUrl = req.query.frontend_redirect || process.env.BOUTIQUE_BACKEND_URL || 'http://localhost:3010';
+				
+				// Rediriger vers le backend callback
+				res.redirect(`${backendCallbackUrl}/api/auth/discord/callback?token=${access_token}&user_id=${userId}`);
 			}
 
 		} catch (err) {
