@@ -570,7 +570,9 @@ client.once('ready', async () => {
 					await existing.edit({ embeds: [embed], components: [] }).catch(() => { });
 					logInfo(`[ROLE_REQ] message mis à jour dans #${channel.name} (${channel.id})`);
 				} else {
-					await channel.send({ embeds: [embed] });
+					await channel.send({ embeds: [embed] }).catch((e) => {
+						console.log(`[ROLE_REQ] Failed to send message to channel ${channelId}: ${e.message}`);
+					});
 					logInfo(`[ROLE_REQ] message publié dans #${channel.name} (${channel.id})`);
 				}
 			}
@@ -1773,13 +1775,24 @@ client.on('interactionCreate', async (interaction) => {
 				// Si accepté: attribuer le rôle Entretien Vocal (et non Whitelist)
 				if (isAccept && config.entretienVocalRoleId && config.whitelistApplyGuildId) {
 					try {
-						const guild = interaction.client.guilds.cache.get(config.whitelistApplyGuildId) || await interaction.client.guilds.fetch(config.whitelistApplyGuildId);
+						const guild = interaction.client.guilds.cache.get(config.whitelistApplyGuildId) || await interaction.client.guilds.fetch(config.whitelistApplyGuildId).catch(() => null);
+						if (!guild) {
+							console.log(`[APPLY] Guild ${config.whitelistApplyGuildId} not found, skipping role assignment`);
+							return;
+						}
 						const member = await guild.members.fetch(targetUserId).catch(() => null);
 						if (member) {
-							await member.roles.add(config.entretienVocalRoleId).catch(() => { });
+							// Vérifier que le rôle existe avant d'essayer de l'ajouter
+							const role = guild.roles.cache.get(config.entretienVocalRoleId);
+							if (role) {
+								await member.roles.add(config.entretienVocalRoleId).catch(() => { });
+							} else {
+								console.log(`[APPLY] Role ${config.entretienVocalRoleId} not found in guild, skipping role assignment`);
+							}
 						}
 					} catch (e) {
-						originalConsole.error('Erreur attribution rôle whitelist:', e);
+						// Erreur silencieuse - le rôle n'existe peut-être pas ou le bot n'a pas les permissions
+						console.log(`[APPLY] Erreur attribution rôle entretien vocal: ${e.message}`);
 					}
 				}
 				await interaction.editReply({ content: `Candidature ${statusText.toLowerCase()}.` });
@@ -1955,13 +1968,22 @@ client.on('guildMemberAdd', async (member) => {
 	try {
 		console.log(`[WELCOME] Nouveau membre: ${member.user.tag} (${member.id})`);
 
-		// Auto-role assignment
-		const autoRoleID = '1423236972729864222';
-		try {
-			await member.roles.add(autoRoleID);
-			console.log(`[AUTOROLE] Role ${autoRoleID} added to ${member.user.tag}`);
-		} catch (e) {
-			originalConsole.error(`[AUTOROLE] Failed to add role ${autoRoleID} to ${member.user.tag}:`, e);
+		// Auto-role assignment (if configured)
+		const autoRoleID = config.autoRoleId || '1423236972729864222';
+		if (autoRoleID) {
+			try {
+				// Vérifier que le rôle existe avant d'essayer de l'ajouter
+				const role = member.guild.roles.cache.get(autoRoleID);
+				if (role) {
+					await member.roles.add(autoRoleID);
+					console.log(`[AUTOROLE] Role ${autoRoleID} added to ${member.user.tag}`);
+				} else {
+					console.log(`[AUTOROLE] Role ${autoRoleID} not found in guild, skipping auto-role assignment`);
+				}
+			} catch (e) {
+				// Erreur silencieuse - le rôle n'existe peut-être pas ou le bot n'a pas les permissions
+				console.log(`[AUTOROLE] Failed to add role ${autoRoleID} to ${member.user.tag}: ${e.message}`);
+			}
 		}
 
 		// Check for channel
