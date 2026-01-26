@@ -1,5 +1,5 @@
 # Docker Compose pour environnement PRODUCTION
-# Port 3005 pour prod
+# Port 3011 pour prod (changé de 3005 pour éviter conflit avec Becrypt frontend prod)
 
 version: '3.8'
 
@@ -11,7 +11,7 @@ services:
       target: production
     container_name: voidbot-prod
     ports:
-      - "127.0.0.1:3005:3005"  # Port 3005 pour prod (localhost uniquement)
+      - "127.0.0.1:3011:3005"  # Port 3011 pour prod (changé de 3005 pour éviter conflit avec Becrypt frontend prod)
     env_file:
       - .env.prod
     environment:

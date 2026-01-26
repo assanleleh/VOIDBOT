@@ -1,5 +1,5 @@
 # Docker Compose pour environnement DEVELOPMENT
-# Port 3005 pour dev (même que prod car VOIDBOT est un service unique)
+# Port 3011 pour dev (changé de 3005 pour éviter conflit avec Becrypt frontend prod)
 
 version: '3.8'
 
@@ -11,7 +11,7 @@ services:
       target: development
     container_name: voidbot-dev
     ports:
-      - "3005:3005"  # Port API
+      - "3011:3005"  # Port API (changé de 3005 pour éviter conflit avec Becrypt frontend prod)
     volumes:
       # Mount source code for hot reload
       - ./src:/app/src

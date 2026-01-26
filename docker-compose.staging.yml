@@ -1,5 +1,5 @@
 # Docker Compose pour environnement STAGING
-# Port 3006 pour staging (différent de dev/prod 3005)
+# Port 3012 pour staging (changé de 3006 pour éviter conflit avec Becrypt cycle-service preprod)
 
 version: '3.8'
 
@@ -11,7 +11,7 @@ services:
       target: production
     container_name: voidbot-staging
     ports:
-      - "3006:3005"  # Port 3006 pour staging (API écoute sur 3005 dans le conteneur)
+      - "3012:3005"  # Port 3012 pour staging (changé de 3006 pour éviter conflit avec Becrypt cycle-service preprod)
     env_file:
       - .env.staging
     environment:
