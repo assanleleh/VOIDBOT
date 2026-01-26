@@ -1,6 +1,6 @@
 {
-    "ticketCategoryId": "YOUR_TICKET_CATEGORY_ID",
-    "logChannelId": "YOUR_LOG_CHANNEL_ID",
+    "ticketCategoryId": "",
+    "logChannelId": "",
     "panelTitle": "Ouvrir un ticket",
     "panelDescription": "Choisissez un thème pour ouvrir un ticket privé.",
     "panelColor": 5793266,
@@ -10,7 +10,7 @@
             "label": "Support",
             "description": "Aide générale",
             "emoji": "🛟",
-            "staffRoleId": "ROLE_ID_SUPPORT",
+            "staffRoleId": "",
             "welcomeMessage": "Merci de décrire votre demande de support.",
             "color": 5763719
         },
@@ -19,27 +19,27 @@
             "label": "Signalement",
             "description": "Signaler un utilisateur ou un bug",
             "emoji": "🚨",
-            "staffRoleId": "ROLE_ID_MOD",
+            "staffRoleId": "",
             "welcomeMessage": "Donnez les détails du signalement.",
             "color": 15548997
         }
     ],
     "welcomeBannerPath": "src/assets/WelcomeBanner.png",
-    "welcomeChannelId": "YOUR_WELCOME_CHANNEL_ID",
-    "whitelistApplyGuildId": "YOUR_STAGING_GUILD_ID",
+    "welcomeChannelId": "",
+    "whitelistApplyGuildId": "1465251132153532481",
     "whitelistApplyChannelName": "devenir-wl",
     "whitelistApplyPanelText": "**Comment obtenir la whitelist ?**\n1) Clique sur le bouton ci-dessous.\n2) Remplis le formulaire reçu.\n3) Ton dossier est envoyé et visible dans #salon-resultats.\n4) Passe ton entretien oral avec le staff.\n5) Obtiens ta whitelist si accepté.",
     "whitelistApplyTitle": "Devenir whitelist",
     "whitelistApplyColor": 5763719,
     "whitelistApplyBannerPath": "src/assets/DevenirWhitelist.png",
-    "whitelistResultChannelId": "YOUR_RESULT_CHANNEL_ID",
+    "whitelistResultChannelId": null,
     "whitelistFormChannelName": "formulaire-wl",
     "factionSunaEmoji": "🏜️",
-    "whitelistRoleId": "YOUR_WHITELIST_ROLE_ID",
-    "alphaRoleId": "YOUR_ALPHA_ROLE_ID",
-    "statusGuildId": "YOUR_STAGING_GUILD_ID",
+    "whitelistRoleId": "1465325574783369371",
+    "alphaRoleId": "1465325260806033500",
+    "betaRoleId": null,
+    "statusGuildId": "1465251132153532481",
     "statusText": "Veille sur {count} shinobis !",
     "statusType": "Watching",
     "apiPort": 3005
 }
-
