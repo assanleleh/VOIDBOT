@@ -69,29 +69,48 @@ Dans **"OAuth2"** → **"Scopes"**, activez :
 
 ### 2.1 Générer l'URL d'invitation
 
-1. Dans **"OAuth2"** → **"URL Generator"**
-2. Sélectionnez les scopes :
-   - ✅ **bot** (obligatoire pour inviter le bot)
-   - ⚠️ **identify**, **email**, **guilds** : Ne les sélectionnez PAS ici (ils sont pour l'OAuth, pas pour l'invitation)
-   
-   **Note** : Si vous sélectionnez des scopes OAuth2, Discord demandera une redirect URI. Pour l'invitation du bot, vous n'avez besoin QUE du scope "bot".
+**Méthode 1 : Via URL Generator (si Discord demande une redirect URI)**
 
-3. Sélectionnez les permissions du bot :
-   - ✅ **Read Messages/View Channels**
-   - ✅ **Send Messages**
-   - ✅ **Manage Messages** (pour les tickets)
-   - ✅ **Embed Links**
-   - ✅ **Attach Files**
-   - ✅ **Read Message History**
-   - ✅ **Manage Channels** (pour créer les tickets)
-   - ✅ **Manage Roles** (pour vérifier les rôles)
-   - ✅ **View Server Members** (obligatoire pour vérifier les rôles)
+1. Dans **"OAuth2"** → **"Redirects"**, ajoutez d'abord une redirect URI :
+   - Cliquez sur **"Add Redirect"**
+   - Ajoutez : `http://localhost:3005/api/auth/discord/callback`
+   - Cliquez sur **"Save Changes"**
 
-4. **Si Discord demande une redirect URI** (même si vous n'avez sélectionné que "bot") :
-   - Ajoutez temporairement : `http://localhost:3005/api/auth/discord/callback`
-   - Cette URI ne sera pas utilisée pour l'invitation, c'est juste pour générer l'URL
+2. Maintenant dans **"OAuth2"** → **"URL Generator"** :
+   - Sélectionnez le scope : ✅ **bot** (seul)
+   - Sélectionnez les permissions du bot :
+     - ✅ **Read Messages/View Channels**
+     - ✅ **Send Messages**
+     - ✅ **Manage Messages** (pour les tickets)
+     - ✅ **Embed Links**
+     - ✅ **Attach Files**
+     - ✅ **Read Message History**
+     - ✅ **Manage Channels** (pour créer les tickets)
+     - ✅ **Manage Roles** (pour vérifier les rôles)
+     - ✅ **View Server Members** (obligatoire pour vérifier les rôles)
+   - Si Discord demande toujours une redirect URI, sélectionnez celle que vous venez d'ajouter
+   - Copiez l'URL générée en bas de la page
 
-5. Copiez l'URL générée en bas de la page
+**Méthode 2 : Créer l'URL manuellement (alternative)**
+
+Si Discord continue de demander une redirect URI, vous pouvez créer l'URL manuellement :
+
+1. Récupérez votre **Client ID** (Application ID) depuis "General Information"
+2. Calculez les permissions : utilisez [Discord Permissions Calculator](https://discordapi.com/permissions.html)
+   - Sélectionnez toutes les permissions listées ci-dessus
+   - Copiez le nombre de permissions (ex: `2147483648`)
+3. Créez l'URL :
+   ```
+   https://discord.com/api/oauth2/authorize?client_id=VOTRE_CLIENT_ID&permissions=NOMBRE_PERMISSIONS&scope=bot
+   ```
+   Remplacez :
+   - `VOTRE_CLIENT_ID` par votre Application ID
+   - `NOMBRE_PERMISSIONS` par le nombre calculé
+
+**Exemple d'URL complète :**
+```
+https://discord.com/api/oauth2/authorize?client_id=123456789012345678&permissions=2147483648&scope=bot
+```
 
 ### 2.2 Inviter le Bot
 
