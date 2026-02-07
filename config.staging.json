@@ -1,0 +1,24 @@
+{
+    "ticketCategoryId": "",
+    "logChannelId": "",
+    "panelTitle": "Ouvrir un ticket",
+    "panelDescription": "Choisissez un thème pour ouvrir un ticket privé.",
+    "themes": [
+        {
+            "key": "support",
+            "label": "Support",
+            "emoji": "🛟"
+        },
+        {
+            "key": "report",
+            "label": "Signalement",
+            "emoji": "🚨"
+        }
+    ],
+    "whitelistApplyGuildId": "1465251132153532481",
+    "whitelistApplyChannelName": "devenir-wl",
+    "whitelistRoleId": "1465325574783369371",
+    "alphaRoleId": "1465325260806033500",
+    "statusGuildId": "1465251132153532481",
+    "apiPort": 3005
+}
