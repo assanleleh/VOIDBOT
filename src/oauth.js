@@ -13,8 +13,10 @@ const axios = require('axios');
  */
 function setupOAuthRoutes(app, config, discordClient) {
 	// Rate limiting pour OAuth (réutiliser authLimiter si disponible)
+	// Rate limiting pour OAuth (réutiliser authLimiter si disponible)
 	const authLimiter = (req, res, next) => {
 		// Simple rate limiting - peut être amélioré avec express-rate-limit
+		// DISABLED IN STAGING
 		next();
 	};
 
@@ -24,11 +26,11 @@ function setupOAuthRoutes(app, config, discordClient) {
 		// Priorité à req.query.redirect_uri (passé dynamiquement) plutôt qu'à DISCORD_REDIRECT_URI (config statique)
 		const redirectUri = req.query.redirect_uri || process.env.DISCORD_REDIRECT_URI;
 		const forType = req.query.for || 'launcher'; // 'launcher' ou 'boutique'
-		
+
 		if (!clientId) {
 			return res.status(500).json({ error: 'Discord OAuth not configured. Missing CLIENT_ID' });
 		}
-		
+
 		if (!redirectUri) {
 			return res.status(500).json({ error: 'Discord OAuth not configured. Missing redirect_uri (query param or DISCORD_REDIRECT_URI env var)' });
 		}
@@ -73,7 +75,7 @@ function setupOAuthRoutes(app, config, discordClient) {
 		const code = req.query.code;
 		const error = req.query.error;
 		const state = req.query.state;
-		
+
 		// Decode state to get redirect_uri and other params
 		let stateData = {};
 		if (state) {
@@ -83,14 +85,14 @@ function setupOAuthRoutes(app, config, discordClient) {
 				console.error('[OAuth] Failed to decode state:', e);
 			}
 		}
-		
+
 		const forType = stateData.for || req.query.for || 'boutique';
 		const redirectUri = stateData.redirect_uri || req.query.redirect_uri || process.env.DISCORD_REDIRECT_URI;
 		const frontendRedirect = stateData.frontend_redirect || req.query.frontend_redirect;
-		
+
 		console.log(`[OAuth] Callback received - State decoded:`, stateData);
 		console.log(`[OAuth] Using redirect_uri for token exchange: ${redirectUri}`);
-		
+
 		if (error) {
 			console.error('[OAuth] Discord returned error:', error);
 			const frontendUrl = process.env.FRONTEND_URL || frontendRedirect || 'http://localhost:5173';
@@ -107,12 +109,12 @@ function setupOAuthRoutes(app, config, discordClient) {
 		if (!clientId || !clientSecret) {
 			return res.status(500).json({ error: 'Discord OAuth not configured. Missing CLIENT_ID or DISCORD_CLIENT_SECRET' });
 		}
-		
+
 		if (!redirectUri) {
 			console.error('[OAuth] Missing redirect_uri in callback. State:', stateData, 'Query:', req.query);
 			return res.status(500).json({ error: 'Discord OAuth not configured. Missing redirect_uri (must match authorization request)' });
 		}
-		
+
 		console.log(`[OAuth] Using redirect_uri for token exchange: ${redirectUri}`);
 
 		// Validate OAuth code format
@@ -122,7 +124,7 @@ function setupOAuthRoutes(app, config, discordClient) {
 
 		try {
 			// 1. Exchange code for tokens
-			const tokenResp = await axios.post('https://discord.com/api/oauth2/token', 
+			const tokenResp = await axios.post('https://discord.com/api/oauth2/token',
 				new URLSearchParams({
 					client_id: clientId,
 					client_secret: clientSecret,
@@ -154,9 +156,9 @@ function setupOAuthRoutes(app, config, discordClient) {
 				const roleId = config.whitelistRoleId;
 
 				if (guildId && roleId) {
-					const guild = discordClient.guilds.cache.get(guildId) || 
+					const guild = discordClient.guilds.cache.get(guildId) ||
 						await discordClient.guilds.fetch(guildId).catch(() => null);
-					
+
 					if (!guild) {
 						console.error('[OAuth] Guild not found:', guildId);
 						return res.status(500).json({ error: 'Guild error' });
@@ -188,7 +190,7 @@ function setupOAuthRoutes(app, config, discordClient) {
 				// Rediriger vers le backend callback avec token et user_id
 				// Le backend créera la session et redirigera vers le frontend
 				const backendCallbackUrl = frontendRedirect || process.env.BOUTIQUE_BACKEND_URL || 'http://localhost:3010';
-				
+
 				// backendCallbackUrl contient déjà le chemin complet, on ne doit pas ajouter /api/auth/discord/callback
 				// Rediriger vers le backend callback
 				res.redirect(`${backendCallbackUrl}?token=${access_token}&user_id=${userId}`);
